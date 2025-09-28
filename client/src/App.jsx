@@ -7,6 +7,7 @@ import { useAppStore } from './store'
 import { useEffect } from 'react'
 import { useState } from 'react'
 import { GET_USER_INFO } from './utils/constant'
+import { apiClient } from './lib/api-client'
 
 const PrivateRoute = ({children}) => {
   const {userInfo} = useAppStore();
@@ -57,9 +58,14 @@ function App() {
   },[userInfo, setUserInfo]);
 
   if(loading) {
-    return <div>
-      Loading...
-    </div>
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+          <p className="text-gray-600 text-lg">Loading...</p>
+        </div>
+      </div>
+    )
   }
 
 

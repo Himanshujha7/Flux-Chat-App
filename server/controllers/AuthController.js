@@ -65,7 +65,7 @@ export const login = async (req, res) => {
             sameSite:"None",
         });
 
-        return res.status(201).json({
+        return res.status(200).json({
             user:{
                 id: user.id,
                 email:user.email,
@@ -79,7 +79,7 @@ export const login = async (req, res) => {
 
     }
     catch(error){
-        console.log("Signup error",error);
+        //console.log("Signup error",error);
         return res.status(500).send("Internal Server Error");
 
     }
@@ -87,14 +87,14 @@ export const login = async (req, res) => {
 
 export const getUserInfo = async (req, res) => {
     try{
-        console.log(req.userId);
+        //console.log(req.userId);
         const userData = await User.findById(req.userId);
         if(!userData){
             return res.status(404).send("User  with the given id not found.");
 
         }
 
-        return res.status(201).json({
+        return res.status(200).json({
                 id: userData.id,
                 email:userData.email,
                 profileSetup :userData.profileSetup,

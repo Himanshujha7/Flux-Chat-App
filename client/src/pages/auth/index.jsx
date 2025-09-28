@@ -3,12 +3,11 @@ import Flux from "@/assets/flx.svg";
 import Victory from "@/assets/victory.svg";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useState } from "react";
-import {Input} from "@/components/ui/input"
-import {Button} from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import {apiClient} from "@/lib/api-client";
-import {SIGNUP_ROUTE} from "@/utils/constant"
-import { LOGIN_ROUTE } from "../../utils/constant";
+import { apiClient } from "@/lib/api-client";
+import { SIGNUP_ROUTE, LOGIN_ROUTE } from "@/utils/constant";
 import { useNavigate } from "react-router-dom";
 import { useAppStore } from "../../store";
 
@@ -18,161 +17,194 @@ const Auth = () => {
 
   const {setUserInfo} = useAppStore();
 
-  const [email,setEmail] =useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] =useState("");
+  const [loginData, setLoginData] = useState({ email: "", password: "" });
+  const [signupData, setSignupData] = useState({ email: "", password: "", confirmPassword: "" });
   const [activeTab, setActiveTab] = useState("login");
+
+  // Get current form data based on active tab
+  const email = activeTab === "login" ? loginData.email : signupData.email;
+  const password = activeTab === "login" ? loginData.password : signupData.password;
+  const confirmPassword = signupData.confirmPassword;
   
 
-  const validatesLogin =() =>{
-    if(!email.length){
+  const validatesLogin = () => {
+    if(!loginData.email.length){
       toast.error("Email is required.");
       return false;
     }
-    if(!password.length){
+    if(!loginData.password.length){
       toast.error("Password is required.");
       return false;
     }
     return true;
-
   }
-  const validatesSignup = () =>{
-    if(!email.length){
+
+  const validatesSignup = () => {
+    if(!signupData.email.length){
       toast.error("Email is required.");
       return false;
     }
-    if(!password.length){
+    if(!signupData.password.length){
       toast.error("Password is required.");
       return false;
     }
-    if(password!=confirmPassword){
+    if(signupData.password !== signupData.confirmPassword){
       toast.error("Password and confirm password do not match.");
       return false;
     }
-
     return true;
   };
 
 
   const handleLogin = async () => {
     if(validatesLogin()){
-      const res = await apiClient.post(
-        LOGIN_ROUTE,
-        {email, password},
-        {withCredentials : true}
-      );
-      if(res.data.user.id){
-        setUserInfo(res.data.user);
-        if(res.data.user.profileSetup) navigate("/chat");
-        else navigate("/profile");
+      try {
+        const res = await apiClient.post(
+          LOGIN_ROUTE,
+          {email: loginData.email, password: loginData.password},
+          {withCredentials : true}
+        );
+        if(res.data.user.id){
+          setUserInfo(res.data.user);
+          if(res.data.user.profileSetup) navigate("/chat");
+          else navigate("/profile");
+        }
+      } catch (error) {
+        console.error("Login error:", error);
+        toast.error("Login failed. Please check your credentials.");
       }
     }
-
   };
 
   const handleSignup = async () => {
     if(validatesSignup()){
-      const res = await apiClient.post(
-        SIGNUP_ROUTE, 
-        {email, password},
-        {withCredentials : true}
-    );
-    if(res.status === 201){
-      setUserInfo(res.data.user);
-      navigate("/profile");
+      try {
+        const res = await apiClient.post(
+          SIGNUP_ROUTE, 
+          {email: signupData.email, password: signupData.password},
+          {withCredentials : true}
+        );
+        if(res.status === 201){
+          setUserInfo(res.data.user);
+          navigate("/profile");
+        }
+      } catch (error) {
+        console.error("Signup error:", error);
+        toast.error("Signup failed. Please try again.");
+      }
     }
-      console.log(res);
-    }
-    
   };
 
   
   return (
-    <div className=" h-[100vh] flex items-center justify-center">
-
-      <div className="  bg-white border-2 border-white text-opacity-90 shadow-2xl w-[80vw] md:w-[90vw] lg:w-[70vw] xl:w-[60vw] rounded-2xl grid xl:grid-cols-2 p-4">
-
-        <div className=" flex flex-col gap-10 items-center justify-center">
-
-          <div className="flex items-center justify-center flex-col">
-
-            <div className="flex items-center justify-center">
-              {/* <h1 className="text-5xl md:text-6xl font-extrabold">
-                Flux
-              </h1> */}
-              <img src={Flux} alt="flux"  className="flex items-center justify-center h-[120px]"/>
-              <img src={Victory} alt="emoji" className="h-[80px] "/>
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 py-8 px-4 flex items-center justify-center">
+      <div className="bg-white shadow-2xl rounded-2xl w-full max-w-6xl overflow-hidden relative">
+        <div className="flex flex-col xl:flex-row min-h-[600px]">
+          
+          {/* Gradient Side - Always Left */}
+          <div className="flex-1 flex flex-col items-center justify-center p-8 xl:p-12 bg-gradient-to-br from-purple-600 to-blue-600 text-white">
+            <div className="text-center space-y-6">
+              <img src={Flux} alt="flux" className="h-20 xl:h-[120px] mx-auto"/>
+              <div className="space-y-2">
+                <h1 className="text-2xl xl:text-4xl font-bold">Flux Chat</h1>
+                <p className="text-purple-100 text-sm xl:text-lg">Join the chat, meet new people, and vibe</p>
+              </div>
             </div>
-            <p className="font-medium text-center text-gray-700"> Join the chat, meet new people, and vibe ✨ </p>
           </div>
 
-          <div className="flex items-center justify-center">
-            <div className="text-center space-y-2">
-              <h2 className="text-xl md:text-3xl font-bold text-gray-800">
-                {activeTab === 'login' ? 'Welcome back!' : 'Join the vibe!'}
-              </h2>
-              <p className="font-medium text-center text-gray-700 ">
+          {/* Form Side - Always Right */}
+          <div className="flex-1 flex flex-col items-center justify-center p-8 xl:p-12 bg-white">
+            <div className="w-full max-w-sm">
+              
+              <div className="text-center space-y-2 mb-8">
+                <h2 className="text-2xl xl:text-3xl font-bold text-gray-900">
+                  {activeTab === 'login' ? 'Welcome back' : 'Join the vibe'}
+                </h2>
+                <p className="text-gray-600 text-sm xl:text-base">
                   {activeTab === 'login' 
                     ? 'Ready to continue your conversations?' 
-                    : 'Create your account and start vibing!'
+                    : 'Create your account and start vibing'
                   }
-              </p>
-            </div>
-          </div>
+                </p>
+              </div>
 
-          <div className="flex items-center justify-center w-full">
-            <Tabs className="w-3/4" value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="bg-transparent rounded-none w-full">
-                <TabsTrigger className="data-[state=active]:bg-transparent  text-black text-opacity-80 
-                 border-b-2 rounded-none w-full data-[state=active]:text-black data-[state=active]:font-semibold 
-                 data-[state=active]:border-b-purple-500 p-3 transition-all duration-300" value ="login">Login</TabsTrigger>
-                <TabsTrigger  className="data-[state=active]:bg-transparent text-black text-opacity-80
-                 border-b-2 rounded-none w-full data-[state=active]:text-black data-[state=active]:font-semibold 
-                 data-[state=active]:border-b-purple-500 p-3 transition-all duration-300" value = "signup">Signup</TabsTrigger>
-              </TabsList>
-              <TabsContent className=" flex flex-col gap-5 mt-10" value="login">
-              <Input 
-              placeholder ="Enter your email" 
-              type="email" 
-              className="rounded-full p-6" 
-              value={email} onChange = {(e)=>setEmail(e.target.value)}
-              />
-              <Input 
-              placeholder ="Enter your password" 
-              type="password" 
-              className="rounded-full p-6" 
-              value={password} onChange = {(e)=>setPassword(e.target.value)}
-              />
-              <Button className=""
-              onClick={handleLogin}>
-                Let me in
-              </Button>
-              </TabsContent>
-              <TabsContent className="flex flex-col gap-5 mt-10" value="signup">
-                <Input 
-                placeholder ="Enter your email" 
-                type="email" 
-                className="rounded-full p-6" 
-                value={email} onChange = {(e)=>setEmail(e.target.value)}
-              />
-              <Input 
-                placeholder ="Enter your password" 
-                type="password" 
-                className="rounded-full p-6" 
-                value={password} onChange = {(e)=>setPassword(e.target.value)}
-              />
-              <Input 
-                placeholder ="Confirm your password" 
-                type="password" 
-                className="rounded-full p-6" 
-                value={confirmPassword} onChange = {(e)=>setConfirmPassword(e.target.value)}
-              />
-              <Button className=""
-              onClick={handleSignup}>
-                Count me in
-              </Button>
-              </TabsContent>
-            </Tabs>
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="bg-gray-100 rounded-lg w-full h-12 mb-8">
+                  <TabsTrigger 
+                    value="login" 
+                    className="data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:font-bold rounded-md h-10 w-full text-sm xl:text-base transition-all duration-300"
+                  >
+                    Login
+                  </TabsTrigger>
+                  <TabsTrigger 
+                    value="signup"
+                    className="data-[state=active]:bg-white data-[state=active]:text-black data-[state=active]:font-bold rounded-md h-10 w-full text-sm xl:text-base transition-all duration-300"
+                  >
+                    Sign Up
+                  </TabsTrigger>
+                </TabsList>
+
+                <div className="min-h-[280px] flex flex-col justify-between">
+                  <TabsContent value="login" className="space-y-6">
+                    <div className="space-y-4">
+                      <Input 
+                        placeholder="Enter your email" 
+                        type="email" 
+                        className="h-12 xl:h-14 px-4 xl:px-6 rounded-full" 
+                        value={loginData.email} 
+                        onChange={(e) => setLoginData({...loginData, email: e.target.value})}
+                      />
+                      <Input 
+                        placeholder="Enter your password" 
+                        type="password" 
+                        className="h-12 xl:h-14 px-4 xl:px-6 rounded-full" 
+                        value={loginData.password} 
+                        onChange={(e) => setLoginData({...loginData, password: e.target.value})}
+                      />
+                      <div className="h-[60px]"></div> {/* Spacer to match signup height */}
+                    </div>
+                    <Button 
+                      className="w-full h-12 xl:h-14 bg-gray-900 hover:bg-gray-700 active:bg-black text-white font-semibold rounded-full text-base xl:text-lg transition-all duration-200 shadow-sm hover:shadow-lg active:shadow-xl transform active:scale-[0.98]"
+                      onClick={handleLogin}
+                    >
+                      Let me in
+                    </Button>
+                  </TabsContent>
+
+                  <TabsContent value="signup" className="space-y-6">
+                    <div className="space-y-4">
+                      <Input 
+                        placeholder="Enter your email" 
+                        type="email" 
+                        className="h-12 xl:h-14 px-4 xl:px-6 rounded-full" 
+                        value={signupData.email} 
+                        onChange={(e) => setSignupData({...signupData, email: e.target.value})}
+                      />
+                      <Input 
+                        placeholder="Enter your password" 
+                        type="password" 
+                        className="h-12 xl:h-14 px-4 xl:px-6 rounded-full" 
+                        value={signupData.password} 
+                        onChange={(e) => setSignupData({...signupData, password: e.target.value})}
+                      />
+                      <Input 
+                        placeholder="Confirm your password" 
+                        type="password" 
+                        className="h-12 xl:h-14 px-4 xl:px-6 rounded-full" 
+                        value={signupData.confirmPassword} 
+                        onChange={(e) => setSignupData({...signupData, confirmPassword: e.target.value})}
+                      />
+                    </div>
+                    <Button 
+                      className="w-full h-12 xl:h-14 bg-gray-900 hover:bg-gray-700 active:bg-black text-white font-semibold rounded-full text-base xl:text-lg transition-all duration-200 shadow-sm hover:shadow-lg active:shadow-xl transform active:scale-[0.98]"
+                      onClick={handleSignup}
+                    >
+                      Count me in
+                    </Button>
+                  </TabsContent>
+                </div>
+              </Tabs>
+            </div>
           </div>
         </div>
       </div>
