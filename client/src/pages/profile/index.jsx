@@ -7,6 +7,7 @@ import { getColor } from "@/lib/utils";
 import { FaTrash, FaPlus } from "react-icons/fa";
 import { Input } from "../../components/ui/input";
 import { colors } from "../../lib/utils";
+import { Button } from "../../components/ui/button";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -47,7 +48,7 @@ const Profile = () => {
             </Avatar>
             {
               hovered && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/70 ring-fuchsia-50 rounded-full transition-all duration-200">
+                <div className="absolute inset-0 flex items-center justify-center bg-black/70 ring-fuchsia-50 rounded-full overflow-hidden transition-all duration-200">
                   {
                     image ? <FaTrash  className="text-white text-3xl cursor-pointer"/> : <FaPlus className="text-white text-3xl cursor-pointer"/>
                   }
@@ -79,11 +80,24 @@ const Profile = () => {
             </div>
             <div className="w-full gap-5 flex ">
               {
-                colors.map((color, index) =>  <div className={`${color} h-8 w-8 rounded-full cursor-pointer transition-all duration-300`}></div>)
-              }
+                colors.map((color, index) =>  <div 
+                  key={index} 
+                  className={`${color} h-8 w-8 rounded-full cursor-pointer transition-all duration-300 ${
+                    selectedColor === index ? "ring-2 ring-white ring-offset-2 ring-offset-[#1b1c24]" : ""
+                  }`}
+                  onClick={() => setSelectedColor(index)}
+                >
 
+                </div>)
+              }
             </div>
           </div>
+        </div>
+        <div className="w-full h-full flex items">
+          <Button className="h-16 w-full bg-purple-700 hover:bg-purple-900 transition-all duration-300">
+            Save Changes
+          </Button>
+
         </div>
       </div>
     </div>
