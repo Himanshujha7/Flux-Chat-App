@@ -66,12 +66,14 @@ const Auth = () => {
         );
         if(res.data.user.id){
           setUserInfo(res.data.user);
+          toast.success("Welcome back!");
           if(res.data.user.profileSetup) navigate("/chat");
           else navigate("/profile");
         }
       } catch (error) {
         console.error("Login error:", error);
-        toast.error("Login failed. Please check your credentials.");
+        const errorMessage = error.response?.data?.error || "Login failed. Please check your credentials.";
+        toast.error(errorMessage);
       }
     }
   };
@@ -86,11 +88,13 @@ const Auth = () => {
         );
         if(res.status === 201){
           setUserInfo(res.data.user);
+          toast.success("Account created successfully!");
           navigate("/profile");
         }
       } catch (error) {
         console.error("Signup error:", error);
-        toast.error("Signup failed. Please try again.");
+        const errorMessage = error.response?.data?.error || "Signup failed. Please try again.";
+        toast.error(errorMessage);
       }
     }
   };

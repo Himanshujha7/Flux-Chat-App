@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAppStore } from "../../store"
 import { useNavigate } from "react-router-dom";
 import { IoArrowBack, IoMoon, IoSunny } from "react-icons/io5";
@@ -10,7 +10,8 @@ import { colors } from "../../lib/utils";
 import { Button } from "../../components/ui/button";
 import { toast } from "sonner";
 import { apiClient } from "../../lib/api-client";
-import { UPDATE_PROFILE_ROUTE } from "../../utils/constant";
+import { ADD_PROFILE_IMAGE_ROUTE, UPDATE_PROFILE_ROUTE, HOST, REMOVE_PROFILE_IMAGE_ROUTE } from "../../utils/constant";
+import { useRef } from "react";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -22,6 +23,21 @@ const Profile = () => {
   const [selectedColor, setSelectedColor] = useState(0);
   const [isDarkMode, setIsDarkMode] = useState(true);
 
+  const fileInputRef = useRef(null);
+
+
+  useEffect(() => {
+    if(userInfo.profileSetup){
+      setFirstName(userInfo.firstName);
+      setLastName(userInfo.lastName);
+      setSelectedColor(userInfo.color);
+      
+    }
+    if(userInfo.image){
+      setImage(`${HOST}/${userInfo.image}`);
+    }
+
+  }, [userInfo])
 
   const validateProfile = () => {
     if(!firstName){
@@ -55,12 +71,59 @@ const Profile = () => {
 
   };
 
+  const handleNavigateBack = () => {
+    if(userInfo?.profileSetup){
+      navigate('/chat');
+    }
+    else{
+      toast.error("Please Complete your Profile setup.");
+    }
+  }
+
+  const handleFileInputClick = () => {
+    
+    fileInputRef.current.click();
+
+  };
+
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    console.log({file});
+    if(file) {
+      const formData = new FormData();
+      formData.append('profile-image',file);
+      const res = await apiClient.post(ADD_PROFILE_IMAGE_ROUTE, formData, {withCredentials:true});
+
+      if(res.status===200 && res.data.image){
+        setUserInfo({...userInfo, image:res.data.image});
+        toast.success("Image Uploaded Successfully.");
+      }
+
+      
+    }
+  };
+
+  const handleDeleteImage = async () => {
+    try{
+      const res = await apiClient.delete(REMOVE_PROFILE_IMAGE_ROUTE, {withCredentials:true});
+      if(res.status === 200 ){
+        setUserInfo({...userInfo, image: null});
+        toast.success("Image Removed Successfully");
+        setImage(null);
+      }
+
+    }
+    catch{
+      toast.error("Failed to remove image.");
+    }
+  };
+
   return (
     <div className={`min-h-screen flex items-center justify-center p-8 transition-colors duration-300 ${
       isDarkMode ? 'bg-gray-950' : 'bg-gray-50'
     }`}>
       
-      {/* Theme Toggle - Minimalist corner button */}
+
       <button
         onClick={() => setIsDarkMode(!isDarkMode)}
         className={`fixed top-6 right-6 w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 ${
@@ -74,7 +137,7 @@ const Profile = () => {
       
       <div className="w-full max-w-5xl">
         
-        {/* Header with better spacing and hierarchy */}
+
         <div className="flex items-center justify-between mb-16">
           <button 
             onClick={() => navigate(-1)}
@@ -82,7 +145,7 @@ const Profile = () => {
               isDarkMode ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'
             }`}
           >
-            <IoArrowBack className="text-xl group-hover:-translate-x-1 transition-transform" />
+            <IoArrowBack onClick={handleNavigateBack} className="text-xl group-hover:-translate-x-1 transition-transform" />
             <span className="text-base font-medium">Back</span>
           </button>
           <div className="text-center">
@@ -131,7 +194,9 @@ const Profile = () => {
                   </Avatar>
                   
                   {hovered && (
-                    <div className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center transition-all duration-200">
+                    <div
+                    onClick={image ? handleDeleteImage : handleFileInputClick} 
+                    className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center transition-all duration-200">
                       {image ? (
                         <FaTrash className="text-white text-2xl hover:text-red-400 transition-colors" />
                       ) : (
@@ -139,6 +204,14 @@ const Profile = () => {
                       )}
                     </div>
                   )}
+                  <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  className="hidden " 
+                  onChange={handleImageChange} 
+                  name = "profile-image" 
+                  accept=".png,.jpg,.jpeg,.svg,.webp"/>
+
                 </div>
               </div>
 
