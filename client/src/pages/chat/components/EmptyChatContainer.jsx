@@ -5,6 +5,14 @@ const EmptyChatContainer = () => {
   return (
     <div className='flex-1 md:bg-[#1c1d25] md:flex flex-col justify-center items-center hidden'>
       <ChatAnimation />
+      <div className='text-opacity-80 text-white flex flex-col gap-5 items-center mt-10 lg:text-4xl text-3xl transition-all duration-300 text-center'>
+        <h3 className='poppins-thin text-2xl'>
+          Hi ! Welcome to <span className='text-purple-400'>
+            Flux
+          </span>.
+        </h3>
+
+      </div>
     </div>
   )
 }
