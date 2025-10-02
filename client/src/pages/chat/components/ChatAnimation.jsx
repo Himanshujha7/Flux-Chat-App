@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 
 const ChatAnimation = () => {
   return (
-    <div className="relative w-80 h-80">
+    <div className="relative w-80 h-80 hidden lg:block">
       
       {/* Floating Message Bubbles */}
       <motion.div
